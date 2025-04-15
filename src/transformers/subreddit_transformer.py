@@ -8,6 +8,7 @@ class SubredditTransformer(Transformer):
         data = raw_subreddit_json.get("data", {})
 
         return Subreddit(
+            subreddit_id=data.get('id', None),
             name=data.get('display_name', ''),
             subscribers=data.get('subscribers', 0),
             nsfw=data.get('over18', False),
