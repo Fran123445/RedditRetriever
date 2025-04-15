@@ -4,6 +4,7 @@ from src.models.comment import Comment
 class Post:
 
     def __init__(self,
+                 post_id: str,
                  title: str,
                  body: str,
                  edited_timestamp: int,
@@ -15,6 +16,7 @@ class Post:
                  created_utc: int,
                  comments: list[Comment]
                  ):
+        self.post_id = post_id
         self.title = title
         self.body = body
         self.edited_timestamp = edited_timestamp
