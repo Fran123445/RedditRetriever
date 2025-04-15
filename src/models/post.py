@@ -6,7 +6,7 @@ class Post:
     def __init__(self,
                  title: str,
                  body: str,
-                 edited: bool,
+                 edited_timestamp: int,
                  downvotes: int,
                  upvotes: int,
                  nsfw: bool,
@@ -17,7 +17,7 @@ class Post:
                  ):
         self.title = title
         self.body = body
-        self.edited = edited
+        self.edited_timestamp = edited_timestamp
         self.downvotes = downvotes
         self.upvotes = upvotes
         self.nsfw = nsfw
