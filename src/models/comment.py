@@ -1,9 +1,11 @@
+from src.models.author import Author
+
 
 class Comment:
 
     def __init__(self,
                  comment_id: str,
-                 author: str,
+                 author: Author,
                  body: str,
                  edited_timestamp: int,
                  upvotes: int,

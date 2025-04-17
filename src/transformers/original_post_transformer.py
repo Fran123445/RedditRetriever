@@ -1,14 +1,23 @@
 from src.models.post import Post
+from src.transformers.author_transformer import AuthorTransformer
+from src.transformers.flair_transformer import FlairTransformer
 from src.transformers.transformer import Transformer
 
 
 class OriginalPostTransformer(Transformer):
 
+    def __init__(self,
+                 author_transformer: AuthorTransformer,
+                 flair_transformer: FlairTransformer
+                 ):
+        self.author_transformer = author_transformer
+        self.flair_transformer = flair_transformer
+
     def transform(self, raw_post_json: dict):
         data = raw_post_json.get("data", {})
 
         return Post(
-            post_id=data.get("id", None),
+            post_id=data.get("id"),
             title=data.get("title", ""),
             body=data.get("selftext", ""),
             edited_timestamp=data.get("edited", None),
@@ -16,7 +25,8 @@ class OriginalPostTransformer(Transformer):
             upvotes=data.get("ups", 0),
             nsfw=data.get("over_18", False),
             spoiler=data.get("spoiler", False),
-            author=data.get("author", ""),
-            created_utc=data.get("created_utc", None),
+            author=self.author_transformer.transform(data),
+            flair=self.flair_transformer.transform(data),
+            created_utc=data.get("created_utc"),
             comments=[]
         )

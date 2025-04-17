@@ -1,8 +1,13 @@
 from src.models.comment import Comment
+from src.transformers.author_transformer import AuthorTransformer
 from src.transformers.transformer import Transformer
 
 
 class CommentTransformer(Transformer):
+
+    def __init__(self,
+                 author_transformer: AuthorTransformer):
+        self.author_transformer = author_transformer
 
     def transform(self, raw_post_comments_json: dict):
         data = raw_post_comments_json.get("data", {})
@@ -16,13 +21,13 @@ class CommentTransformer(Transformer):
             replies = self.transform(child_data["replies"])
 
             comment = Comment(
-                comment_id=child_data['id'],
-                author=data['author'],
-                body=data['body'],
-                edited_timestamp=data['edited'] if data['edited'] else None,
-                upvotes=data['ups'],
-                downvotes=data['downs'],
-                created_utc=data['created_utc'],
+                comment_id=child_data.get('id'),
+                author=self.author_transformer.transform(child_data),
+                body=child_data.get('body'),
+                edited_timestamp=child_data.get('edited'),
+                upvotes=child_data.get('ups'),
+                downvotes=child_data.get('downs'),
+                created_utc=child_data.get('created_utc'),
                 children=replies
             )
 

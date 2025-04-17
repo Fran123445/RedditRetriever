@@ -1,4 +1,6 @@
+from src.models.author import Author
 from src.models.comment import Comment
+from src.models.flair import Flair
 
 
 class Post:
@@ -12,7 +14,8 @@ class Post:
                  upvotes: int,
                  nsfw: bool,
                  spoiler: bool,
-                 author: str,
+                 author: Author,
+                 flair: Flair,
                  created_utc: int,
                  comments: list[Comment]
                  ):
@@ -25,5 +28,6 @@ class Post:
         self.nsfw = nsfw
         self.spoiler = spoiler
         self.author = author
+        self.flair = flair
         self.created_utc = created_utc
         self.comments = comments
