@@ -37,7 +37,7 @@ class RedditAccess:
         print(f"Error: {response.status_code} - {response.text}")
         return False
 
-    def get_subreddit_posts(self, subreddit: str, limit: int = 10):
+    def call_api(self, endpoint, params=None):
         if self.token is None:
             print("Token not available. Please call get_token() first.")
             return None
@@ -47,11 +47,39 @@ class RedditAccess:
             "User-Agent": "RedditRetriever/0.1 by Fran12344"
         }
 
-        url = f"https://oauth.reddit.com/r/{subreddit}/top?limit={limit}&t=year"
-        response = requests.get(url, headers=headers)
+        url = f"https://oauth.reddit.com{endpoint}"
+        response = requests.get(url, headers=headers, params=params)
 
         if response.status_code == 200:
             return response.json()
         else:
             print(f"Error: {response.status_code} - {response.text}")
             return None
+
+    def get_subreddit_data(self, subreddit_name):
+        return self.call_api(f"/r/{subreddit_name}/about")
+
+    def get_post_list(self,
+                      subreddit: str,
+                      timeframe: str = "all",
+                      limit: int = 10):
+        params = {
+            "limit": limit,
+            "t": timeframe
+        }
+
+        return self.call_api(f"/r/{subreddit}/top", params=params)
+
+    def get_comments(self,
+                     subreddit: str,
+                     post_id: str,
+                     sort: str = "best",
+                     depth: int = 10,
+                     limit: int = 1000):
+        params = {
+            "sort": sort,
+            "depth": depth,
+            "limit": limit
+        }
+
+        return self.call_api(f"/r/{subreddit}/comments/{post_id}", params=params)
