@@ -1,4 +1,4 @@
-import requests
+import httpx
 import base64
 import os
 from dotenv import load_dotenv
@@ -9,57 +9,68 @@ class RedditAccess:
 
     REDDIT_TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
     GRANT_TYPE =  "client_credentials"
+    USER_AGENT = os.getenv("USER_AGENT")
 
-    def __init__(self):
+    def __init__(self,
+                 httpx_session: httpx.AsyncClient,
+                 ):
         self.client_id = os.getenv("CLIENT_ID")
         self.client_secret = os.getenv("CLIENT_SECRET")
         self.token = None
+        self.session = httpx_session
 
-    def get_token(self):
+    async def get_token(self):
         encoded_credentials = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
 
         headers = {
             "Authorization": f"Basic {encoded_credentials}",
-            "User-Agent": "RedditRetriever/0.1 by Fran12344"
+            "User-Agent": RedditAccess.USER_AGENT
         }
 
         data = {
             "grant_type": RedditAccess.GRANT_TYPE
         }
 
-        response = requests.post(RedditAccess.REDDIT_TOKEN_URL, headers=headers, data=data)
+        response = await self.session.post(
+            RedditAccess.REDDIT_TOKEN_URL,
+            headers=headers,
+            data=data
+        )
 
-        if response.status_code == 200:
-            token_data = response.json()
-            self.token = token_data["access_token"]
-            return True
+        response.raise_for_status()
 
-        print(f"Error: {response.status_code} - {response.text}")
-        return False
+        token_data = response.json()
+        token = token_data["access_token"]
 
-    def call_api(self, endpoint, params=None):
+        self.token = token
+        return token
+
+    async def call_api(self, endpoint, params=None):
         if self.token is None:
             print("Token not available. Please call get_token() first.")
             return None
 
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "User-Agent": "RedditRetriever/0.1 by Fran12344"
+            "User-Agent": RedditAccess.USER_AGENT
         }
 
         url = f"https://oauth.reddit.com{endpoint}"
-        response = requests.get(url, headers=headers, params=params)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Error: {response.status_code} - {response.text}")
-            return None
+        response = await self.session.get(
+            url,
+            headers=headers,
+            params=params
+        )
 
-    def get_subreddit_data(self, subreddit_name):
-        return self.call_api(f"/r/{subreddit_name}/about")
+        response.raise_for_status()
 
-    def get_post_list(self,
+        return response.json()
+
+    async def get_subreddit_data(self, subreddit_name):
+        return await self.call_api(f"/r/{subreddit_name}/about")
+
+    async def get_post_list(self,
                       subreddit: str,
                       timeframe: str = "all",
                       limit: int = 10):
@@ -68,9 +79,9 @@ class RedditAccess:
             "t": timeframe
         }
 
-        return self.call_api(f"/r/{subreddit}/top", params=params)
+        return await self.call_api(f"/r/{subreddit}/top", params=params)
 
-    def get_comments(self,
+    async def get_comments(self,
                      subreddit: str,
                      post_id: str,
                      sort: str = "best",
@@ -82,4 +93,4 @@ class RedditAccess:
             "limit": limit
         }
 
-        return self.call_api(f"/r/{subreddit}/comments/{post_id}", params=params)
+        return await self.call_api(f"/r/{subreddit}/comments/{post_id}", params=params)
