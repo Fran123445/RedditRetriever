@@ -18,7 +18,7 @@ class CommentTransformer(Transformer):
         for child in children:
             child_data = child.get("data", {})
 
-            replies = self.transform(child_data["replies"])
+            replies = self.transform(child_data["replies"]) if child_data.get("replies") else []
 
             comment = Comment(
                 comment_id=child_data.get('id'),
