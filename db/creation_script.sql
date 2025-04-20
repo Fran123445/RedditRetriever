@@ -7,7 +7,7 @@ USE RedditRetriever
 GO
 
 CREATE TABLE Subreddit(
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY IDENTITY(1,1),
 	internal_reddit_id NVARCHAR(16) UNIQUE NOT NULL,
 	name NVARCHAR(512) NOT NULL,
 	subscribers INTEGER NOT NULL,
@@ -15,19 +15,19 @@ CREATE TABLE Subreddit(
 )
 
 CREATE TABLE Flair(
-	id BIGINT PRIMARY KEY,
+	id BIGINT PRIMARY KEY IDENTITY(1,1),
 	text NVARCHAR(512)
 )
 
 CREATE TABLE [User](
-	id BIGINT PRIMARY KEY,
+	id BIGINT PRIMARY KEY IDENTITY(1,1),
 	internal_reddit_id NVARCHAR(16) UNIQUE NOT NULL,
 	username NVARCHAR(512) NOT NULL
 )
 
 CREATE TABLE Author(
 	id BIGINT,
-	subreddit_id INTEGER NOT NULL,
+	subreddit_id INTEGER,
 	flair_id BIGINT,
 	PRIMARY KEY (id, subreddit_id),
 	FOREIGN KEY (id) REFERENCES [User](id),
@@ -36,7 +36,7 @@ CREATE TABLE Author(
 )
 
 CREATE TABLE Post(
-	id BIGINT PRIMARY KEY,
+	id BIGINT PRIMARY KEY IDENTITY(1,1),
 	internal_reddit_id NVARCHAR(16) UNIQUE NOT NULL,
 	subreddit_id INTEGER NOT NULL,
 	author_id BIGINT NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE Post(
 )
 
 CREATE TABLE Comment(
-	id BIGINT PRIMARY KEY,
+	id BIGINT PRIMARY KEY IDENTITY(1,1),
 	internal_reddit_id NVARCHAR(16) UNIQUE NOT NULL,
 	post_id BIGINT NOT NULL,
 	author_id BIGINT NOT NULL,
