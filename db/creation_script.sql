@@ -96,34 +96,127 @@ END
 GO
 
 CREATE PROCEDURE spLoadFlair(
-	@id BIGINT,
 	@text NVARCHAR(512)
 ) AS
 BEGIN
 	INSERT INTO Flair(
-		id,
 		text
 	) VALUES (
-		@id,
 		@text
 	)
 END
 GO
 
 CREATE PROCEDURE spLoadUser(
-	@id BIGINT,
 	@internal_reddit_id NVARCHAR(16),
 	@username NVARCHAR(512)
 ) AS
 BEGIN
 	INSERT INTO [User](
-		id,
 		internal_reddit_id,
 		username
 	) VALUES (
-		@id,
 		@internal_reddit_id,
 		@username
+	)
+END
+GO
+
+CREATE PROCEDURE spLoadAuthor(
+	@user_id BIGINT,
+	@subreddit_id INTEGER,
+	@flair_id BIGINT
+) AS
+BEGIN
+	INSERT INTO Author(
+		id,
+		subreddit_id,
+		flair_id
+	) VALUES (
+		@user_id,
+		@subreddit_id,
+		@flair_id
+	)
+END
+GO
+
+CREATE PROCEDURE spLoadPost(
+	@internal_reddit_id NVARCHAR(16),
+	@subreddit_id INTEGER,
+	@author_id BIGINT,
+	@flaird_id BIGINT,
+	@title NVARCHAR(512),
+	@body NVARCHAR(MAX),
+	@edited_date DATETIME,
+	@upvotes INTEGER,
+	@downvotes INTEGER,
+	@nsfw BIT,
+	@spoiler BIT,
+	@creation_date DATETIME
+) AS
+BEGIN
+	INSERT INTO Post(
+		internal_reddit_id,
+		subreddit_id,
+		author_id,
+		flair_id,
+		title,
+		body,
+		edited_date,
+		upvotes,
+		downvotes,
+		nsfw,
+		spoiler,
+		creation_date
+	) VALUES (
+		@internal_reddit_id,
+		@subreddit_id,
+		@author_id,
+		@flaird_id,
+		@title,
+		@body,
+		@edited_date,
+		@upvotes,
+		@downvotes,
+		@nsfw,
+		@spoiler,
+		@creation_date
+	)
+END
+GO
+
+CREATE PROCEDURE spLoadComment(
+	@internal_reddit_id NVARCHAR(16),
+	@post_id BIGINT,
+	@author_id BIGINT,
+	@parent_comment_id BIGINT,
+	@body NVARCHAR(MAX),
+	@edited_date DATETIME,
+	@upvotes INTEGER,
+	@downvotes INTEGER,
+	@creation_date DATETIME
+) AS
+BEGIN
+	INSERT INTO Comment(
+		internal_reddit_id,
+		post_id,
+		author_id,
+		parent_comment_id,
+		body,
+		edited_date,
+		upvotes,
+		downvotes,
+		creation_date
+	) VALUES (
+		@internal_reddit_id,
+		@post_id,
+		@author_id,
+		@parent_comment_id,
+		@body,
+		@edited_date,
+		@upvotes,
+		@downvotes,
+		@creation_date
 	)
 END
 GO
