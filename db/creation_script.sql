@@ -78,7 +78,8 @@ CREATE PROCEDURE spLoadSubreddit(
 	@internal_reddit_id NVARCHAR(16),
 	@name NVARCHAR(512),
 	@subscribers INTEGER,
-	@nsfw BIT
+	@nsfw BIT,
+	@primary_key INTEGER OUTPUT
 ) AS
 BEGIN
 	INSERT INTO Subreddit(
@@ -92,11 +93,14 @@ BEGIN
 		@subscribers,
 		@nsfw
 	)
+
+	SET @primary_key = SCOPE_IDENTITY()
 END
 GO
 
 CREATE PROCEDURE spLoadFlair(
-	@text NVARCHAR(512)
+	@text NVARCHAR(512),
+	@primary_key BIGINT OUTPUT
 ) AS
 BEGIN
 	INSERT INTO Flair(
@@ -104,12 +108,15 @@ BEGIN
 	) VALUES (
 		@text
 	)
+
+	SET @primary_key = SCOPE_IDENTITY()
 END
 GO
 
 CREATE PROCEDURE spLoadUser(
 	@internal_reddit_id NVARCHAR(16),
-	@username NVARCHAR(512)
+	@username NVARCHAR(512),
+	@primary_key BIGINT OUTPUT
 ) AS
 BEGIN
 	INSERT INTO [User](
@@ -119,6 +126,8 @@ BEGIN
 		@internal_reddit_id,
 		@username
 	)
+
+	SET @primary_key = SCOPE_IDENTITY()
 END
 GO
 
@@ -144,7 +153,7 @@ CREATE PROCEDURE spLoadPost(
 	@internal_reddit_id NVARCHAR(16),
 	@subreddit_id INTEGER,
 	@author_id BIGINT,
-	@flaird_id BIGINT,
+	@flair_id BIGINT,
 	@title NVARCHAR(512),
 	@body NVARCHAR(MAX),
 	@edited_date DATETIME,
@@ -152,7 +161,8 @@ CREATE PROCEDURE spLoadPost(
 	@downvotes INTEGER,
 	@nsfw BIT,
 	@spoiler BIT,
-	@creation_date DATETIME
+	@creation_date DATETIME,
+	@primary_key BIGINT OUTPUT
 ) AS
 BEGIN
 	INSERT INTO Post(
@@ -172,7 +182,7 @@ BEGIN
 		@internal_reddit_id,
 		@subreddit_id,
 		@author_id,
-		@flaird_id,
+		@flair_id,
 		@title,
 		@body,
 		@edited_date,
@@ -182,6 +192,8 @@ BEGIN
 		@spoiler,
 		@creation_date
 	)
+
+	SET @primary_key = SCOPE_IDENTITY()
 END
 GO
 
@@ -189,18 +201,21 @@ CREATE PROCEDURE spLoadComment(
 	@internal_reddit_id NVARCHAR(16),
 	@post_id BIGINT,
 	@author_id BIGINT,
+	@subreddit_id INTEGER,
 	@parent_comment_id BIGINT,
 	@body NVARCHAR(MAX),
 	@edited_date DATETIME,
 	@upvotes INTEGER,
 	@downvotes INTEGER,
-	@creation_date DATETIME
+	@creation_date DATETIME,
+	@primary_key BIGINT OUTPUT
 ) AS
 BEGIN
 	INSERT INTO Comment(
 		internal_reddit_id,
 		post_id,
 		author_id,
+		subreddit_id,
 		parent_comment_id,
 		body,
 		edited_date,
@@ -211,6 +226,7 @@ BEGIN
 		@internal_reddit_id,
 		@post_id,
 		@author_id,
+		@subreddit_id,
 		@parent_comment_id,
 		@body,
 		@edited_date,
@@ -218,5 +234,7 @@ BEGIN
 		@downvotes,
 		@creation_date
 	)
+
+	SET @primary_key = SCOPE_IDENTITY()
 END
 GO
