@@ -70,3 +70,60 @@ CREATE TABLE Comment(
 	FOREIGN KEY (author_id, subreddit_id) REFERENCES Author(id, subreddit_id),
 	FOREIGN KEY (parent_comment_id) REFERENCES Comment(id)
 )
+GO
+
+-- Data loading SPs
+
+CREATE PROCEDURE spLoadSubreddit(
+	@internal_reddit_id NVARCHAR(16),
+	@name NVARCHAR(512),
+	@subscribers INTEGER,
+	@nsfw INT
+) AS
+BEGIN
+	INSERT INTO Subreddit(
+		internal_reddit_id,
+		name,
+		subscribers,
+		nsfw
+	) VALUES (
+		@internal_reddit_id,
+		@name,
+		@subscribers,
+		@nsfw
+	)
+END
+GO
+
+CREATE PROCEDURE spLoadFlair(
+	@id BIGINT,
+	@text NVARCHAR(512)
+) AS
+BEGIN
+	INSERT INTO Flair(
+		id,
+		text
+	) VALUES (
+		@id,
+		@text
+	)
+END
+GO
+
+CREATE PROCEDURE spLoadUser(
+	@id BIGINT,
+	@internal_reddit_id NVARCHAR(16),
+	@username NVARCHAR(512)
+) AS
+BEGIN
+	INSERT INTO [User](
+		id,
+		internal_reddit_id,
+		username
+	) VALUES (
+		@id,
+		@internal_reddit_id,
+		@username
+	)
+END
+GO
