@@ -78,7 +78,7 @@ CREATE PROCEDURE spLoadSubreddit(
 	@internal_reddit_id NVARCHAR(16),
 	@name NVARCHAR(512),
 	@subscribers INTEGER,
-	@nsfw INT
+	@nsfw BIT
 ) AS
 BEGIN
 	INSERT INTO Subreddit(
