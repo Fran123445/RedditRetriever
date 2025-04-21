@@ -15,8 +15,11 @@ CREATE TABLE Subreddit(
 )
 
 CREATE TABLE Flair(
-	id BIGINT PRIMARY KEY IDENTITY(1,1),
+	id BIGINT IDENTITY(1,1),
+	subreddit_id INTEGER,
 	text NVARCHAR(512)
+	PRIMARY KEY (id, subreddit_id)
+	FOREIGN KEY (subreddit_id) REFERENCES subreddit(id)
 )
 
 CREATE TABLE [User](
@@ -32,7 +35,7 @@ CREATE TABLE Author(
 	PRIMARY KEY (id, subreddit_id),
 	FOREIGN KEY (id) REFERENCES [User](id),
 	FOREIGN KEY (subreddit_id) REFERENCES Subreddit(id),
-	FOREIGN KEY (flair_id) REFERENCES Flair(id)
+	FOREIGN KEY (flair_id, subreddit_id) REFERENCES Flair(id, subreddit_id)
 )
 
 CREATE TABLE Post(
@@ -51,7 +54,7 @@ CREATE TABLE Post(
 	creation_date DATETIME NOT NULL,
 	FOREIGN KEY (subreddit_id) REFERENCES Subreddit(id),
 	FOREIGN KEY (author_id, subreddit_id) REFERENCES Author(id, subreddit_id),
-	FOREIGN KEY (flair_id) REFERENCES Flair(id)
+	FOREIGN KEY (flair_id, subreddit_id) REFERENCES Flair(id, subreddit_id)
 )
 
 CREATE TABLE Comment(
@@ -100,12 +103,15 @@ GO
 
 CREATE PROCEDURE spLoadFlair(
 	@text NVARCHAR(512),
+	@subreddit_id INTEGER,
 	@primary_key BIGINT OUTPUT
 ) AS
 BEGIN
 	INSERT INTO Flair(
+	    subreddit_id,
 		text
 	) VALUES (
+		@subreddit_id,
 		@text
 	)
 
