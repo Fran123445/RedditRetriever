@@ -1,8 +1,8 @@
 from src.models.subreddit import Subreddit
-from src.transformers.transformer import Transformer
+from src.transformers.object.object_transformer import ObjectTransformer
 
 
-class SubredditTransformer(Transformer):
+class SubredditObjectTransformer(ObjectTransformer):
 
     def transform(self, raw_subreddit_json: dict):
         data = raw_subreddit_json.get("data", {})

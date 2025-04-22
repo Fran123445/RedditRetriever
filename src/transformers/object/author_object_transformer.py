@@ -1,12 +1,12 @@
 from src.models.author import Author
-from src.transformers.flair_transformer import FlairTransformer
-from src.transformers.transformer import Transformer
+from src.transformers.object.flair_object_transformer import FlairObjectTransformer
+from src.transformers.object.object_transformer import ObjectTransformer
 
 
-class AuthorTransformer(Transformer):
+class AuthorObjectObjectTransformer(ObjectTransformer):
 
     def __init__(self,
-                 flair_transformer: FlairTransformer
+                 flair_transformer: FlairObjectTransformer
                  ):
         self.flair_transformer = flair_transformer
 

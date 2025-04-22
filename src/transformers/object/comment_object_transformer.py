@@ -1,12 +1,12 @@
 from src.models.comment import Comment
-from src.transformers.author_transformer import AuthorTransformer
-from src.transformers.transformer import Transformer
+from src.transformers.object.author_object_transformer import AuthorObjectObjectTransformer
+from src.transformers.object.object_transformer import ObjectTransformer
 
 
-class CommentTransformer(Transformer):
+class CommentObjectTransformer(ObjectTransformer):
 
     def __init__(self,
-                 author_transformer: AuthorTransformer):
+                 author_transformer: AuthorObjectObjectTransformer):
         self.author_transformer = author_transformer
 
     def transform(self, raw_post_comments_json: dict):

@@ -1,8 +1,8 @@
 from src.models.flair import Flair
-from src.transformers.transformer import Transformer
+from src.transformers.object.object_transformer import ObjectTransformer
 
 
-class FlairTransformer(Transformer):
+class FlairObjectTransformer(ObjectTransformer):
 
     def __init__(self,
                  field_name: str,
