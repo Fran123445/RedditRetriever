@@ -10,9 +10,6 @@ class FlairObjectTransformer(ObjectTransformer):
         self.field_name = field_name
 
     def transform(self, data: dict):
-        flair_text = data.get(self.field_name)
+        flair_text = data.get(self.field_name, None) or ""
 
-        if flair_text:
-            return Flair(flair_text)
-
-        return None
+        return Flair(flair_text)
