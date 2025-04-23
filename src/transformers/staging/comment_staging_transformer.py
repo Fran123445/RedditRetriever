@@ -31,10 +31,10 @@ class CommentStagingTransformer(StagingTransformer):
                  subreddit.subreddit_id,
                  parent_comment.comment_id if parent_comment else None,
                  comment.body,
-                 comment.edited_timestamp,
+                 comment.edited_datetime,
                  comment.upvotes,
                  comment.downvotes,
-                 comment.created_utc)
+                 comment.created_datetime)
             )
 
             if comment.children:

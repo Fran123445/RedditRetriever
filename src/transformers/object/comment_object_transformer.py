@@ -20,14 +20,17 @@ class CommentObjectTransformer(ObjectTransformer):
 
             replies = self.transform(child_data["replies"]) if child_data.get("replies") else []
 
+            edited_datetime = self._timestamp_to_datetime(data.get("edited"))
+            created_datetime = self._timestamp_to_datetime(data.get("created_utc"))
+
             comment = Comment(
                 comment_id=child_data.get('id'),
                 author=self.author_transformer.transform(child_data),
                 body=child_data.get('body'),
-                edited_timestamp=child_data.get('edited'),
+                edited_datetime=edited_datetime,
                 upvotes=child_data.get('ups'),
                 downvotes=child_data.get('downs'),
-                created_utc=child_data.get('created_utc'),
+                created_datetime=created_datetime,
                 children=replies
             )
 

@@ -16,17 +16,20 @@ class OriginalPostObjectTransformer(ObjectTransformer):
     def transform(self, raw_post_json: dict):
         data = raw_post_json.get("data", {})
 
+        edited_datetime = self._timestamp_to_datetime(data.get("edited"))
+        created_datetime = self._timestamp_to_datetime(data.get("created_utc"))
+
         return Post(
             post_id=data.get("id"),
             title=data.get("title", ""),
             body=data.get("selftext", ""),
-            edited_timestamp=data.get("edited", None),
+            edited_datetime=edited_datetime,
             downvotes=data.get("downs", 0),
             upvotes=data.get("ups", 0),
             nsfw=data.get("over_18", False),
             spoiler=data.get("spoiler", False),
             author=self.author_transformer.transform(data),
             flair=self.flair_transformer.transform(data),
-            created_utc=data.get("created_utc"),
+            created_datetime=created_datetime,
             comments=[]
         )

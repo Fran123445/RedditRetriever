@@ -14,12 +14,12 @@ class OriginalPostStagingTransformer(StagingTransformer):
              post.flair.text,
              post.title,
              post.body,
-             post.edited_timestamp,
+             post.edited_datetime,
              post.upvotes,
              post.downvotes,
              int(post.nsfw),
              int(post.spoiler),
-             post.created_utc)
+             post.created_datetime)
 
             for post in subreddit.posts
         ]
