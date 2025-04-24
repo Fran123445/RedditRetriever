@@ -273,3 +273,13 @@ BEGIN
 		SC.internal_parent_comment_id = ParentC.internal_reddit_id
 END
 GO
+
+CREATE PROCEDURE usp_LoadTablesFromStaging AS
+BEGIN
+	EXEC usp_LoadSubredditsFromStaging
+	EXEC usp_LoadFlairsFromStaging
+	EXEC usp_LoadUsersFromStaging
+	EXEC usp_LoadAuthorsFromStaging
+	EXEC usp_LoadPostsFromStaging
+	EXEC usp_LoadCommentsFromStaging
+END
