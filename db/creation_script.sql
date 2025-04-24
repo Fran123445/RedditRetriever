@@ -74,3 +74,53 @@ CREATE TABLE Comment(
 	FOREIGN KEY (parent_comment_id) REFERENCES Comment(id)
 )
 GO
+
+-- Staging tables
+
+CREATE TABLE Staging_Subreddit(
+	internal_reddit_id NVARCHAR(16) UNIQUE,
+	name NVARCHAR(512),
+	subscribers INTEGER,
+	nsfw BIT
+)
+
+CREATE TABLE Staging_Flair(
+	internal_subreddit_id NVARCHAR(16),
+	text NVARCHAR(512)
+)
+
+CREATE TABLE Staging_Author(
+	internal_reddit_id NVARCHAR(16),
+	internal_subreddit_id NVARCHAR(16),
+	username NVARCHAR(512),
+	flair NVARCHAR(512)
+)
+
+CREATE TABLE Staging_Post(
+	internal_reddit_id NVARCHAR(16) UNIQUE,
+	internal_subreddit_id NVARCHAR(16),
+	internal_author_id NVARCHAR(16),
+	flair NVARCHAR(512),
+	title NVARCHAR(MAX),
+	body NVARCHAR(MAX),
+	edited_date DATETIME,
+	upvotes INTEGER,
+	downvotes INTEGER,
+	nsfw BIT,
+	spoiler BIT,
+	creation_date DATETIME,
+)
+
+CREATE TABLE Staging_Comment(
+	internal_reddit_id NVARCHAR(16) UNIQUE,
+	internal_post_id NVARCHAR(16),
+	internal_author_id NVARCHAR(16),
+	internal_subreddit_id NVARCHAR(16),
+	internal_parent_comment_id NVARCHAR(16),
+	body NVARCHAR(MAX),
+	edited_date DATETIME,
+	upvotes INTEGER,
+	downvotes INTEGER,
+	creation_date DATETIME
+)
+GO
