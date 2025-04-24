@@ -124,3 +124,69 @@ CREATE TABLE Staging_Comment(
 	creation_date DATETIME
 )
 GO
+
+-- Staging -> Schema stored procedures
+
+CREATE PROCEDURE usp_LoadSubredditsFromStaging AS
+BEGIN
+	INSERT INTO Subreddit(
+		internal_reddit_id,
+		name,
+		subscribers,
+		nsfw
+	)
+	SELECT 
+		internal_reddit_id,
+		name,
+		subscribers,
+		nsfw
+	FROM Staging_Subreddit
+END
+GO
+
+CREATE PROCEDURE usp_LoadFlairsFromStaging AS
+BEGIN
+	INSERT INTO Flair(
+		subreddit_id,
+		text
+	)
+	SELECT
+		internal_subreddit_id,
+		text
+	FROM Staging_Flair
+		
+END
+GO
+
+CREATE PROCEDURE usp_LoadUsersFromStaging AS
+BEGIN
+	INSERT INTO [User](
+		internal_reddit_id,
+		username
+	)
+	SELECT
+		internal_reddit_id,
+		username
+	FROM Staging_Author
+END
+GO
+
+CREATE PROCEDURE usp_LoadAuthorsFromStaging AS
+BEGIN
+	INSERT INTO Author(
+		id,
+		subreddit_id,
+		flair_id
+	)
+	SELECT
+		U.id,
+		s.id,
+		f.id
+	FROM Staging_Author SA JOIN [User] U ON
+		SA.internal_reddit_id = U.internal_reddit_id
+	JOIN Subreddit S ON
+		SA.internal_subreddit_id = S.internal_reddit_id
+	JOIN Flair F ON
+		SA.flair = F.text
+END
+GO
