@@ -190,3 +190,85 @@ BEGIN
 		SA.flair = F.text
 END
 GO
+
+CREATE PROCEDURE usp_LoadPostsFromStaging AS
+BEGIN
+	INSERT INTO POST (
+		internal_reddit_id,
+		subreddit_id,
+		author_id,
+		flair_id,
+		title,
+		body,
+		edited_date,
+		upvotes,
+		downvotes,
+		nsfw,
+		spoiler,
+		creation_date
+	)
+	SELECT 
+		SP.internal_reddit_id,
+		S.id,
+		A.id,
+		F.id,
+		SP.title,
+		SP.body,
+		SP.edited_date,
+		SP.upvotes,
+		SP.downvotes,
+		SP.nsfw,
+		SP.spoiler,
+		SP.creation_date
+	FROM Staging_Post SP JOIN Subreddit S ON
+		SP.internal_subreddit_id = S.internal_reddit_id
+	JOIN [User] U ON
+		SP.internal_author_id = U.internal_reddit_id
+	JOIN Author A ON
+		S.id = A.subreddit_id AND
+		U.id = A.id
+	JOIN Flair F ON
+		S.id = F.subreddit_id AND
+		F.text = SP.flair
+END
+GO
+
+CREATE PROCEDURE usp_LoadCommentsFromStaging AS
+BEGIN
+	INSERT INTO Comment (
+		internal_reddit_id,
+		post_id,
+		author_id,
+		subreddit_id,
+		parent_comment_id,
+		body,
+		edited_date,
+		upvotes,
+		downvotes,
+		creation_date
+	)
+	SELECT
+		SC.internal_reddit_id,
+		P.id,
+		A.id,
+		S.id,
+		ParentC.id,
+		SC.body,
+		SC.edited_date,
+		SC.upvotes,
+		SC.downvotes,
+		SC.creation_date
+	FROM Staging_Comment SC
+	JOIN Subreddit S ON
+		SC.internal_subreddit_id = S.internal_reddit_id
+	JOIN Post P ON
+		SC.internal_post_id = P.internal_reddit_id
+	JOIN [User] U ON
+		SC.internal_author_id = U.internal_reddit_id
+	JOIN Author A ON
+		U.id = A.id AND S.id = A.subreddit_id
+	LEFT JOIN Comment ParentC ON
+		S.id = ParentC.subreddit_id AND
+		SC.internal_parent_comment_id = ParentC.internal_reddit_id
+END
+GO
