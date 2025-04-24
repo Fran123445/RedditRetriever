@@ -151,9 +151,10 @@ BEGIN
 		text
 	)
 	SELECT
-		internal_subreddit_id,
+		S.id,
 		text
-	FROM Staging_Flair
+	FROM Staging_Flair SF JOIN Subreddit S ON
+		SF.internal_subreddit_id = S.internal_reddit_id
 		
 END
 GO
