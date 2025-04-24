@@ -16,6 +16,10 @@ class CommentObjectTransformer(ObjectTransformer):
         comments = []
 
         for child in children:
+            if child.get("kind") == "more":
+                # this is because, if deep enough (10), the API returns a "more" object instead of the rest of the comments
+                return []
+
             child_data = child.get("data", {})
 
             replies = self.transform(child_data["replies"]) if child_data.get("replies") else []
