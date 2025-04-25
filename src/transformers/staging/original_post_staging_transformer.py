@@ -11,7 +11,7 @@ class OriginalPostStagingTransformer(StagingTransformer):
             (post.post_id,
              subreddit.subreddit_id,
              post.author.author_id,
-             post.flair.text,
+             post.flair.text if post.flair else None,
              post.title,
              post.body,
              post.edited_datetime,

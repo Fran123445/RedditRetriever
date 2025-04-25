@@ -13,7 +13,7 @@ class AuthorStagingTransformer(StagingTransformer):
         for post in subreddit.posts:
             self._get_authors_from_comments(post.comments, authors_set)
 
-        return [(author.author_id, subreddit.subreddit_id, author.username, author.flair.text) for author in authors_set]
+        return [(author.author_id, subreddit.subreddit_id, author.username, author.flair.text if author.flair else None) for author in authors_set]
 
 
     def _get_authors_from_comments(self,

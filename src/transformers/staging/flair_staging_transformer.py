@@ -8,7 +8,7 @@ class FlairStagingTransformer(StagingTransformer):
     def transform(self,
                   subreddit: Subreddit):
 
-        flairs = set([post.flair.text for post in subreddit.posts])
+        flairs = set([post.flair.text if post.flair else None for post in subreddit.posts])
 
         for post in subreddit.posts:
             self._get_flairs_from_comments(post.comments, flairs)
@@ -20,5 +20,5 @@ class FlairStagingTransformer(StagingTransformer):
                                   comments: list[Comment],
                                   flair_set: set):
         for comment in comments:
-            flair_set.add(comment.author.flair.text)
+            flair_set.add(comment.author.flair.text if comment.author.flair else None)
             self._get_flairs_from_comments(comment.children, flair_set)
