@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.models.author import Author
 
 
@@ -7,10 +9,10 @@ class Comment:
                  comment_id: str,
                  author: Author,
                  body: str,
-                 edited_datetime: int,
+                 edited_datetime: datetime,
                  upvotes: int,
                  downvotes: int,
-                 created_datetime: int,
+                 created_datetime: datetime,
                  children: list["Comment"]
                  ):
         self.comment_id = comment_id

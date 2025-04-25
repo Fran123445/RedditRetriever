@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.models.author import Author
 from src.models.comment import Comment
 from src.models.flair import Flair
@@ -9,14 +11,14 @@ class Post:
                  post_id: str,
                  title: str,
                  body: str,
-                 edited_datetime: int,
+                 edited_datetime: datetime,
                  downvotes: int,
                  upvotes: int,
                  nsfw: bool,
                  spoiler: bool,
                  author: Author,
                  flair: Flair,
-                 created_datetime: int,
+                 created_datetime: datetime,
                  comments: list[Comment]
                  ):
         self.post_id = post_id
