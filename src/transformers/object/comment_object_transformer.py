@@ -17,8 +17,9 @@ class CommentObjectTransformer(ObjectTransformer):
 
         for child in children:
             if child.get("kind") == "more":
-                # this is because, if deep enough (10), the API returns a "more" object instead of the rest of the comments
-                return []
+                # this is because the API returns a "more" object instead of the rest of the comments in long threads
+                # it also does so if you go deep enough (10) into a comment tree
+                continue
 
             child_data = child.get("data", {})
 
