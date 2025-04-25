@@ -129,18 +129,34 @@ GO
 
 CREATE PROCEDURE usp_LoadSubredditsFromStaging AS
 BEGIN
-	INSERT INTO Subreddit(
-		internal_reddit_id,
-		name,
-		subscribers,
-		nsfw
+	WITH Subreddit_CTE AS (
+		SELECT 
+			internal_reddit_id,
+			name,
+			subscribers,
+			nsfw
+		FROM Staging_Subreddit
 	)
-	SELECT 
-		internal_reddit_id,
-		name,
-		subscribers,
-		nsfw
-	FROM Staging_Subreddit
+	MERGE Subreddit AS S
+	USING Subreddit_CTE AS SCTE
+	ON S.internal_reddit_id = SCTE.internal_reddit_id
+	WHEN MATCHED THEN
+		UPDATE SET
+			S.name = SCTE.name,
+			S.subscribers = SCTE.subscribers,
+			S.nsfw = SCTE.nsfw
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (
+			internal_reddit_id,
+			name,
+			subscribers,
+			nsfw
+		) VALUES (
+			SCTE.internal_reddit_id,
+			SCTE.name,
+			SCTE.subscribers,
+			SCTE.nsfw
+		);	
 END
 GO
 
@@ -150,12 +166,14 @@ BEGIN
 		subreddit_id,
 		text
 	)
-	SELECT
+	SELECT DISTINCT
 		S.id,
 		text
 	FROM Staging_Flair SF JOIN Subreddit S ON
 		SF.internal_subreddit_id = S.internal_reddit_id
-		
+	WHERE NOT EXISTS(
+		SELECT 1 FROM Flair F2 WHERE F2.subreddit_id = S.id AND F2.text LIKE SF.text
+	)
 END
 GO
 
@@ -165,54 +183,59 @@ BEGIN
 		internal_reddit_id,
 		username
 	)
-	SELECT
+	SELECT DISTINCT
 		internal_reddit_id,
 		username
-	FROM Staging_Author
+	FROM Staging_Author SA
+	WHERE NOT EXISTS(
+		SELECT 1 FROM [User] U WHERE U.internal_reddit_id = SA.internal_reddit_id
+	)
 END
 GO
 
 CREATE PROCEDURE usp_LoadAuthorsFromStaging AS
 BEGIN
-	INSERT INTO Author(
-		id,
-		subreddit_id,
-		flair_id
-	)
-	SELECT
-		U.id,
-		s.id,
-		f.id
+	WITH Author_CTE AS(
+	SELECT DISTINCT
+		U.id AS id,
+		s.id AS Subreddit_id,
+		f.id AS Flair_id
 	FROM Staging_Author SA JOIN [User] U ON
 		SA.internal_reddit_id = U.internal_reddit_id
 	JOIN Subreddit S ON
 		SA.internal_subreddit_id = S.internal_reddit_id
-	JOIN Flair F ON
-		SA.flair = F.text
+	LEFT JOIN Flair F ON -- left join because the flair can be null
+		F.subreddit_id = S.id AND
+		SA.flair LIKE F.text
+	)
+	MERGE Author AS A
+	USING Author_CTE AS ACTE
+	ON A.id = ACTE.id AND
+		A.subreddit_id = ACTE.subreddit_id
+	WHEN MATCHED THEN
+		UPDATE SET
+			A.flair_id = ACTE.flair_id
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (
+			id,
+			subreddit_id,
+			flair_id
+		) VALUES (
+			ACTE.id,
+			ACTE.subreddit_id,
+			ACTE.flair_id
+		);
 END
 GO
 
 CREATE PROCEDURE usp_LoadPostsFromStaging AS
 BEGIN
-	INSERT INTO POST (
-		internal_reddit_id,
-		subreddit_id,
-		author_id,
-		flair_id,
-		title,
-		body,
-		edited_date,
-		upvotes,
-		downvotes,
-		nsfw,
-		spoiler,
-		creation_date
-	)
-	SELECT 
-		SP.internal_reddit_id,
-		S.id,
-		A.id,
-		F.id,
+	WITH Post_CTE AS(
+		SELECT 
+		SP.internal_reddit_id AS internal_reddit_id,
+		S.id AS subreddit_id,
+		A.id AS author_id,
+		F.id AS flair_id,
 		SP.title,
 		SP.body,
 		SP.edited_date,
@@ -221,56 +244,132 @@ BEGIN
 		SP.nsfw,
 		SP.spoiler,
 		SP.creation_date
-	FROM Staging_Post SP JOIN Subreddit S ON
-		SP.internal_subreddit_id = S.internal_reddit_id
-	JOIN [User] U ON
-		SP.internal_author_id = U.internal_reddit_id
-	JOIN Author A ON
-		S.id = A.subreddit_id AND
-		U.id = A.id
-	JOIN Flair F ON
-		S.id = F.subreddit_id AND
-		F.text = SP.flair
+		FROM Staging_Post SP JOIN Subreddit S ON
+			SP.internal_subreddit_id = S.internal_reddit_id
+		JOIN [User] U ON
+			SP.internal_author_id = U.internal_reddit_id
+		JOIN Author A ON
+			S.id = A.subreddit_id AND
+			U.id = A.id
+		LEFT JOIN Flair F ON
+			S.id = F.subreddit_id AND
+			F.text LIKE SP.flair
+	)
+	MERGE Post AS P
+	USING Post_CTE AS PCTE
+	ON P.internal_reddit_id = PCTE.internal_reddit_id
+	WHEN MATCHED THEN
+		UPDATE SET
+			P.flair_id = PCTE.flair_id,
+			P.body = PCTE.body,
+			P.edited_date = PCTE.edited_date,
+			P.upvotes = PCTE.upvotes,
+			P.downvotes = PCTE.downvotes,
+			P.nsfw = PCTE.nsfw,
+			P.spoiler = PCTE.spoiler
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (
+			internal_reddit_id,
+			subreddit_id,
+			author_id,
+			flair_id,
+			title,
+			body,
+			edited_date,
+			upvotes,
+			downvotes,
+			nsfw,
+			spoiler,
+			creation_date
+		) VALUES (
+			PCTE.internal_reddit_id,
+			PCTE.subreddit_id,
+			PCTE.author_id,
+			PCTE.flair_id,
+			PCTE.title,
+			PCTE.body,
+			PCTE.edited_date,
+			PCTE.upvotes,
+			PCTE.downvotes,
+			PCTE.nsfw,
+			PCTE.spoiler,
+			PCTE.creation_date
+		);
 END
 GO
 
 CREATE PROCEDURE usp_LoadCommentsFromStaging AS
 BEGIN
-	INSERT INTO Comment (
-		internal_reddit_id,
-		post_id,
-		author_id,
-		subreddit_id,
-		parent_comment_id,
-		body,
-		edited_date,
-		upvotes,
-		downvotes,
-		creation_date
-	)
-	SELECT
+	WITH Comment_CTE AS(
+		SELECT
 		SC.internal_reddit_id,
-		P.id,
-		A.id,
-		S.id,
-		ParentC.id,
+		P.id AS post_id,
+		A.id AS author_id,
+		S.id AS subreddit_id,
+		ParentC.id AS parent_comment_id,
 		SC.body,
 		SC.edited_date,
 		SC.upvotes,
 		SC.downvotes,
 		SC.creation_date
-	FROM Staging_Comment SC
-	JOIN Subreddit S ON
-		SC.internal_subreddit_id = S.internal_reddit_id
-	JOIN Post P ON
-		SC.internal_post_id = P.internal_reddit_id
-	JOIN [User] U ON
-		SC.internal_author_id = U.internal_reddit_id
-	JOIN Author A ON
-		U.id = A.id AND S.id = A.subreddit_id
-	LEFT JOIN Comment ParentC ON
-		S.id = ParentC.subreddit_id AND
-		SC.internal_parent_comment_id = ParentC.internal_reddit_id
+		FROM Staging_Comment SC
+		JOIN Subreddit S ON
+			SC.internal_subreddit_id = S.internal_reddit_id
+		JOIN Post P ON
+			SC.internal_post_id = P.internal_reddit_id
+		JOIN [User] U ON
+			SC.internal_author_id = U.internal_reddit_id
+		JOIN Author A ON
+			U.id = A.id AND S.id = A.subreddit_id
+		LEFT JOIN Comment ParentC ON
+			S.id = ParentC.subreddit_id AND
+			SC.internal_parent_comment_id = ParentC.internal_reddit_id
+	)
+	MERGE Comment AS C
+	USING Comment_CTE AS CCTE
+	ON C.internal_reddit_id = CCTE.internal_reddit_id
+	WHEN MATCHED THEN
+		UPDATE SET
+			C.body = CCTE.body,
+			C.edited_date = CCTE.edited_date,
+			C.upvotes = CCTE.upvotes,
+			C.downvotes = CCTE.downvotes
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (
+			internal_reddit_id,
+			post_id,
+			author_id,
+			subreddit_id,
+			parent_comment_id,
+			body,
+			edited_date,
+			upvotes,
+			downvotes,
+			creation_date
+		) VALUES (
+			CCTE.internal_reddit_id,
+			CCTE.post_id,
+			CCTE.author_id,
+			CCTE.subreddit_id,
+			CCTE.parent_comment_id,
+			CCTE.body,
+			CCTE.edited_date,
+			CCTE.upvotes,
+			CCTE.downvotes,
+			CCTE.creation_date
+		);
+
+	-- This is because children might not get assigned their parent comment on the above merge
+	UPDATE ChildComment
+	SET
+		ChildComment.parent_comment_id = ParentComment.id
+	FROM Comment ChildComment JOIN Staging_Comment SC ON
+		ChildComment.internal_reddit_id = SC.internal_reddit_id
+	JOIN Comment ParentComment ON
+		SC.internal_parent_comment_id = ParentComment.internal_reddit_id
+	WHERE 
+		SC.internal_parent_comment_id IS NOT NULL AND
+		ChildComment.parent_comment_id IS NULL
 END
 GO
 
@@ -283,3 +382,5 @@ BEGIN
 	EXEC usp_LoadPostsFromStaging
 	EXEC usp_LoadCommentsFromStaging
 END
+
+EXEC usp_LoadTablesFromStaging
