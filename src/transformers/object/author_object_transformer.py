@@ -11,7 +11,7 @@ class AuthorObjectObjectTransformer(ObjectTransformer):
         self.flair_transformer = flair_transformer
 
     def transform(self, data: dict):
-        author_id = data.get("author_fullname")
+        author_id = data.get("author_fullname", "0") # default to "0" if None (i.e. the user is deleted)
         username = data.get("author")
         flair = self.flair_transformer.transform(data)
 
