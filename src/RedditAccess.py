@@ -2,6 +2,7 @@ import httpx
 import base64
 import os
 from dotenv import load_dotenv
+from ratelimit import limits, sleep_and_retry
 
 load_dotenv()
 
@@ -45,6 +46,8 @@ class RedditAccess:
         self.token = token
         return token
 
+    @sleep_and_retry
+    @limits(calls=90, period=60)
     async def call_api(self, endpoint, params=None):
         if self.token is None:
             print("Token not available. Please call get_token() first.")
