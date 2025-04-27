@@ -167,7 +167,7 @@ BEGIN
 	FROM Staging_Flair SF JOIN Subreddit S ON
 		SF.internal_subreddit_id = S.internal_reddit_id
 	WHERE NOT EXISTS(
-		SELECT 1 FROM Flair F2 WHERE F2.subreddit_id = S.id AND F2.text LIKE SF.text
+		SELECT 1 FROM Flair F2 WHERE F2.subreddit_id = S.id AND F2.text IS NOT DISTINCT FROM SF.text
 	)
 END
 GO
@@ -201,7 +201,7 @@ BEGIN
 		SA.internal_subreddit_id = S.internal_reddit_id
 	LEFT JOIN Flair F ON -- left join because the flair can be null
 		F.subreddit_id = S.id AND
-		SA.flair LIKE F.text
+		SA.flair IS NOT DISTINCT FROM F.text
 	)
 	MERGE Author AS A
 	USING Author_CTE AS ACTE
@@ -247,7 +247,7 @@ BEGIN
 			U.id = A.id
 		LEFT JOIN Flair F ON
 			S.id = F.subreddit_id AND
-			F.text LIKE SP.flair
+			F.text IS NOT DISTINCT FROM SP.flair
 	)
 	MERGE Post AS P
 	USING Post_CTE AS PCTE
