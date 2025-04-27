@@ -33,7 +33,6 @@ class CommentStagingTransformer(StagingTransformer):
                  comment.body,
                  comment.edited_datetime,
                  comment.upvotes,
-                 comment.downvotes,
                  comment.created_datetime)
             )
 

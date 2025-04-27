@@ -16,7 +16,6 @@ class OriginalPostStagingTransformer(StagingTransformer):
              post.body,
              post.edited_datetime,
              post.upvotes,
-             post.downvotes,
              int(post.nsfw),
              int(post.spoiler),
              post.created_datetime)

@@ -34,7 +34,6 @@ class CommentObjectTransformer(ObjectTransformer):
                 body=child_data.get('body'),
                 edited_datetime=edited_datetime,
                 upvotes=child_data.get('ups'),
-                downvotes=child_data.get('downs'),
                 created_datetime=created_datetime,
                 children=replies
             )

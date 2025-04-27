@@ -47,7 +47,6 @@ CREATE TABLE Post(
 	body NVARCHAR(MAX),
 	edited_date DATETIME, -- if this one's null, then the post was never edited
 	upvotes INTEGER NOT NULL,
-	downvotes INTEGER NOT NULL,
 	nsfw BIT NOT NULL,
 	spoiler BIT NOT NULL,
 	creation_date DATETIME NOT NULL,
@@ -66,7 +65,6 @@ CREATE TABLE Comment(
 	body NVARCHAR(MAX) NOT NULL,
 	edited_date DATETIME,
 	upvotes INTEGER NOT NULL,
-	downvotes INTEGER NOT NULL,
 	creation_date DATETIME NOT NULL,
 	FOREIGN KEY (post_id) REFERENCES Post(id),
 	FOREIGN KEY (author_id, subreddit_id) REFERENCES Author(id, subreddit_id),
@@ -104,7 +102,6 @@ CREATE TABLE Staging_Post(
 	body NVARCHAR(MAX),
 	edited_date DATETIME,
 	upvotes INTEGER,
-	downvotes INTEGER,
 	nsfw BIT,
 	spoiler BIT,
 	creation_date DATETIME,
@@ -119,14 +116,13 @@ CREATE TABLE Staging_Comment(
 	body NVARCHAR(MAX),
 	edited_date DATETIME,
 	upvotes INTEGER,
-	downvotes INTEGER,
 	creation_date DATETIME
 )
 GO
 
 -- Staging -> Schema stored procedures
 
-CREATE PROCEDURE usp_LoadSubredditsFromStaging AS
+ALTER PROCEDURE usp_LoadSubredditsFromStaging AS
 BEGIN
 	WITH Subreddit_CTE AS (
 		SELECT 
@@ -159,7 +155,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LoadFlairsFromStaging AS
+ALTER PROCEDURE usp_LoadFlairsFromStaging AS
 BEGIN
 	INSERT INTO Flair(
 		subreddit_id,
@@ -176,7 +172,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LoadUsersFromStaging AS
+ALTER PROCEDURE usp_LoadUsersFromStaging AS
 BEGIN
 	INSERT INTO [User](
 		internal_reddit_id,
@@ -192,7 +188,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LoadAuthorsFromStaging AS
+ALTER PROCEDURE usp_LoadAuthorsFromStaging AS
 BEGIN
 	WITH Author_CTE AS(
 	SELECT DISTINCT
@@ -227,7 +223,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LoadPostsFromStaging AS
+ALTER PROCEDURE usp_LoadPostsFromStaging AS
 BEGIN
 	WITH Post_CTE AS(
 		SELECT 
@@ -239,7 +235,6 @@ BEGIN
 		SP.body,
 		SP.edited_date,
 		SP.upvotes,
-		SP.downvotes,
 		SP.nsfw,
 		SP.spoiler,
 		SP.creation_date
@@ -263,7 +258,6 @@ BEGIN
 			P.body = PCTE.body,
 			P.edited_date = PCTE.edited_date,
 			P.upvotes = PCTE.upvotes,
-			P.downvotes = PCTE.downvotes,
 			P.nsfw = PCTE.nsfw,
 			P.spoiler = PCTE.spoiler
 	WHEN NOT MATCHED BY TARGET THEN
@@ -276,7 +270,6 @@ BEGIN
 			body,
 			edited_date,
 			upvotes,
-			downvotes,
 			nsfw,
 			spoiler,
 			creation_date
@@ -289,7 +282,6 @@ BEGIN
 			PCTE.body,
 			PCTE.edited_date,
 			PCTE.upvotes,
-			PCTE.downvotes,
 			PCTE.nsfw,
 			PCTE.spoiler,
 			PCTE.creation_date
@@ -297,7 +289,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LoadCommentsFromStaging AS
+ALTER PROCEDURE usp_LoadCommentsFromStaging AS
 BEGIN
 	WITH Comment_CTE AS(
 		SELECT
@@ -309,7 +301,6 @@ BEGIN
 		SC.body,
 		SC.edited_date,
 		SC.upvotes,
-		SC.downvotes,
 		SC.creation_date
 		FROM Staging_Comment SC
 		JOIN Subreddit S ON
@@ -331,8 +322,7 @@ BEGIN
 		UPDATE SET
 			C.body = CCTE.body,
 			C.edited_date = CCTE.edited_date,
-			C.upvotes = CCTE.upvotes,
-			C.downvotes = CCTE.downvotes
+			C.upvotes = CCTE.upvotes
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT (
 			internal_reddit_id,
@@ -343,7 +333,6 @@ BEGIN
 			body,
 			edited_date,
 			upvotes,
-			downvotes,
 			creation_date
 		) VALUES (
 			CCTE.internal_reddit_id,
@@ -354,7 +343,6 @@ BEGIN
 			CCTE.body,
 			CCTE.edited_date,
 			CCTE.upvotes,
-			CCTE.downvotes,
 			CCTE.creation_date
 		);
 
@@ -383,3 +371,76 @@ BEGIN
 END
 
 EXEC usp_LoadTablesFromStaging
+
+
+SELECT
+	S.name,
+	S.subscribers,
+	AVG(P.upvotes)/CAST(subscribers AS FLOAT) AS average_upvotes,
+	COUNT(*)/CAST(subscribers AS FLOAT) as comments_per_subscriber
+FROM Post P JOIN Subreddit S ON
+	P.subreddit_id = S.id
+JOIN Comment C ON
+	C.post_id = P.id AND
+	C.subreddit_id = S.id
+GROUP BY 
+	S.name, S.subscribers
+ORDER BY 4 DESC
+
+SELECT
+	S.name,
+	AVG((CAST(C.upvotes AS FLOAT)/CAST(S.subscribers AS FLOAT))/(LEN(C.body))) AS average_comment_length
+FROM Comment C JOIN Subreddit S ON
+	C.subreddit_id =S.id
+GROUP BY S.name
+ORDER BY 2 DESC
+
+SELECT
+	S.name,
+	COUNT(*) AS ammount_of_comments,
+	S.subscribers,
+	COUNT(*)/CAST(S.subscribers AS FLOAT) AS comment_count_per_subs
+FROM Post P JOIN Comment C ON
+	P.id = C.post_id
+JOIN Subreddit S ON
+	P.subreddit_id = S.id
+GROUP BY
+	S.name,
+	S.subscribers
+ORDER BY 2 DESC
+
+SELECT
+	S.name,
+	P.title,
+	P.id,
+	AVG(DATEDIFF(minute, P.creation_date, C.creation_date)) AS avg_time_diff_between_p_and_c
+FROM Comment C JOIN Post P ON
+	C.post_id = P.id
+JOIN Subreddit S ON
+	P.subreddit_id = S.id
+GROUP BY
+	S.name,
+	P.title,
+	S.subscribers,
+	P.id
+ORDER BY 3 ASC
+
+DELETE Comment
+DELETE Post
+DELETE Author
+DELETE [User]
+DELETE Flair
+DELETE Subreddit
+
+DELETE Staging_Author
+DELETE Staging_Comment
+DELETE Staging_Post
+DELETE Staging_Flair
+DELETE Staging_Subreddit
+
+DROP TABLE Comment
+DROP TABLE Post
+DROP TABLE Author
+DROP TABLE [User]
+DROP TABLE Flair
+DROP TABLE Subreddit

@@ -15,11 +15,10 @@ class OriginalPostLoader(Loader):
                 body,
                 edited_date,
                 upvotes,
-                downvotes,
                 nsfw,
                 spoiler,
                 creation_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             params=data
         )

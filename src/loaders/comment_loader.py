@@ -15,9 +15,8 @@ class CommentLoader(Loader):
                 body,
                 edited_date,
                 upvotes,
-                downvotes,
                 creation_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             params=data
         )

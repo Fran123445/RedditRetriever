@@ -12,7 +12,6 @@ class Post:
                  title: str,
                  body: str,
                  edited_datetime: datetime,
-                 downvotes: int,
                  upvotes: int,
                  nsfw: bool,
                  spoiler: bool,
@@ -25,7 +24,6 @@ class Post:
         self.title = title
         self.body = body
         self.edited_datetime = edited_datetime
-        self.downvotes = downvotes
         self.upvotes = upvotes
         self.nsfw = nsfw
         self.spoiler = spoiler

@@ -11,7 +11,6 @@ class Comment:
                  body: str,
                  edited_datetime: datetime,
                  upvotes: int,
-                 downvotes: int,
                  created_datetime: datetime,
                  children: list["Comment"]
                  ):
@@ -20,6 +19,5 @@ class Comment:
         self.body = body
         self.edited_datetime = edited_datetime
         self.upvotes = upvotes
-        self.downvotes = downvotes
         self.created_datetime = created_datetime
         self.children = children

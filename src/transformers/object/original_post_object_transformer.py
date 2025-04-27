@@ -24,7 +24,6 @@ class OriginalPostObjectTransformer(ObjectTransformer):
             title=data.get("title", ""),
             body=data.get("selftext", ""),
             edited_datetime=edited_datetime,
-            downvotes=data.get("downs", 0),
             upvotes=data.get("ups", 0),
             nsfw=data.get("over_18", False),
             spoiler=data.get("spoiler", False),
