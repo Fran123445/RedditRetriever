@@ -122,7 +122,7 @@ GO
 
 -- Staging -> Schema stored procedures
 
-ALTER PROCEDURE usp_LoadSubredditsFromStaging AS
+CREATE PROCEDURE usp_LoadSubredditsFromStaging AS
 BEGIN
 	WITH Subreddit_CTE AS (
 		SELECT 
@@ -155,7 +155,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_LoadFlairsFromStaging AS
+CREATE PROCEDURE usp_LoadFlairsFromStaging AS
 BEGIN
 	INSERT INTO Flair(
 		subreddit_id,
@@ -172,7 +172,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_LoadUsersFromStaging AS
+CREATE PROCEDURE usp_LoadUsersFromStaging AS
 BEGIN
 	INSERT INTO [User](
 		internal_reddit_id,
@@ -188,7 +188,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_LoadAuthorsFromStaging AS
+CREATE PROCEDURE usp_LoadAuthorsFromStaging AS
 BEGIN
 	WITH Author_CTE AS(
 	SELECT DISTINCT
@@ -223,7 +223,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_LoadPostsFromStaging AS
+CREATE PROCEDURE usp_LoadPostsFromStaging AS
 BEGIN
 	WITH Post_CTE AS(
 		SELECT 
@@ -289,7 +289,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_LoadCommentsFromStaging AS
+CREATE PROCEDURE usp_LoadCommentsFromStaging AS
 BEGIN
 	WITH Comment_CTE AS(
 		SELECT
@@ -369,5 +369,33 @@ BEGIN
 	EXEC usp_LoadPostsFromStaging
 	EXEC usp_LoadCommentsFromStaging
 END
+
+-- Index creation
+
+
+CREATE INDEX IX_Flair_subreddit_id ON Flair (subreddit_id);
+GO
+
+CREATE INDEX IX_Author_id ON Author (id);
+GO
+CREATE INDEX IX_Author_subreddit_id ON Author (subreddit_id);
+GO
+CREATE INDEX IX_Author_flair_id ON Author (flair_id);
+GO
+
+CREATE INDEX IX_Post_subreddit_id ON Post (subreddit_id);
+GO
+CREATE INDEX IX_Post_author_id_subreddit_id ON Post (author_id, subreddit_id);
+GO
+CREATE INDEX IX_Post_flair_id ON Post (flair_id);
+GO
+
+CREATE INDEX IX_Comment_post_id ON Comment (post_id);
+GO
+CREATE INDEX IX_Comment_author_id_subreddit_id ON Comment (author_id, subreddit_id);
+GO
+CREATE INDEX IX_Comment_parent_comment_id ON Comment (parent_comment_id);
+GO
+
 
 EXEC usp_LoadTablesFromStaging
