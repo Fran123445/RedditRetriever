@@ -125,7 +125,7 @@ async def main():
 
     print("Loaders instantiated")
 
-    subreddit_names = json.load(open("subreddits.json"))
+    subreddit_names = json.load(open("src/subreddits.json"))
 
 
     finish = False

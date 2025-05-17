@@ -50,7 +50,7 @@ A Python tool designed to extract data from the Reddit API (subreddits, posts, a
 
 The overall process is:
 1.  Run the SQL creation script.
-2.  Run main.py to fetch data and load it into the staging tables. You can press the Esc key at any time to interrupt the data fetching and loading process gracefully.
+2.  Run python -m src.main from the root folder to fetch data and load it into the staging tables. You can press the Esc key at any time to interrupt the data fetching and loading process gracefully.
 3.  Run the `usp_LoadTablesFromStaging` SP to move data from staging into the final schema.
 
 That's it. Enjoy playing around with a bit of Reddit data.
